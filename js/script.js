@@ -10,9 +10,16 @@ class Game extends Phaser.Scene {
   }
   create() {
     // Create the car
-    game.car = this.physics.add.sprite(0, 0, "car0").setScale(8).setCollideWorldBounds(true).setSize(16, 8).setOffset(0, 0);
+    game.car = this.physics.add.sprite(0, 0, "car0").setScale(8).setCollideWorldBounds(true).setSize(16, 8).setOffset(0, 0).setDrag(800);
+
+    // Input
+    game.cursors = this.input.keyboard.createCursorKeys();
   }
   update() {
-
+    if (game.cursors.right.isDown) {
+      game.car.setVelocityX(500);
+    } else if (game.cursors.left.isDown) {
+      game.car.setVelocityX(-500);
+    }
   }
 }
