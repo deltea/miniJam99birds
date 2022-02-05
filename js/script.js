@@ -15,6 +15,11 @@ class Game extends Phaser.Scene {
     // Input
     game.cursors = this.input.keyboard.createCursorKeys();
 
+    // Camera
+    this.cameras.main.setBounds(0, 0, 2000, this.sys.game.canvas.height);
+    this.physics.world.setBounds(0, 0, 2000, this.sys.game.canvas.height);
+    this.cameras.main.startFollow(game.car, true, 0.1, 0.1);
+
     // Animation
     this.anims.create({
       key: "drive",
