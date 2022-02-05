@@ -14,14 +14,28 @@ class Game extends Phaser.Scene {
 
     // Input
     game.cursors = this.input.keyboard.createCursorKeys();
+
+    // Animation
+    this.anims.create({
+      key: "drive",
+      frames: [{
+        key: "car1"
+      }, {
+        key: "car0"
+      }],
+      frameRate: 5,
+      repeat: 0
+    });
   }
   update() {
     if (game.cursors.right.isDown) {
       game.car.setVelocityX(500);
       game.car.flipX = true;
+      game.car.anims.play("drive", true);
     } else if (game.cursors.left.isDown) {
       game.car.setVelocityX(-500);
       game.car.flipX = false;
+      game.car.anims.play("drive", true);
     }
   }
 }
