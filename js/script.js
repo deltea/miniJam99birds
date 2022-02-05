@@ -18,8 +18,10 @@ class Game extends Phaser.Scene {
   update() {
     if (game.cursors.right.isDown) {
       game.car.setVelocityX(500);
+      game.car.flipX = true;
     } else if (game.cursors.left.isDown) {
       game.car.setVelocityX(-500);
+      game.car.flipX = false;
     }
   }
 }
