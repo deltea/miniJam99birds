@@ -12,11 +12,13 @@ let game = {
   }
 };
 class Game extends Phaser.Scene {
-  constructor(key, birdMax, hasWind, hasOil) {
+  constructor(key, birdMax, hasWind, hasOil, hasTree, treePos) {
     super(key);
     this.birdMax = birdMax;
     this.hasWind = hasWind;
     this.hasOil = hasOil;
+    this.hasTree = hasTree;
+    this.treePos = treePos;
   }
   preload() {
     this.load.image("car0", "assets/car0.png");
@@ -44,6 +46,12 @@ class Game extends Phaser.Scene {
     this.load.image("poop", "assets/poop.png");
     this.load.image("cloud", "assets/cloud.png");
     this.load.image("oil", "assets/oil.png");
+    this.load.image("tree0", "assets/tree0.png");
+    this.load.image("tree1", "assets/tree1.png");
+    this.load.image("tree2", "assets/tree2.png");
+    this.load.image("boss1", "assets/boss1.png");
+    this.load.image("boss2", "assets/boss2.png");
+    this.load.image("bossPoop", "assets/bossPoop.png");
 
     this.load.image("0", "assets/0.png");
     this.load.image("1", "assets/1.png");
@@ -62,6 +70,11 @@ class Game extends Phaser.Scene {
   }
   create() {
     let phaser = this;
+    // Create tree
+    if (this.hasTree) {
+      game.tree = this.physics.add.staticSprite(this.treePos, this.sys.game.canvas.height - 256, "tree0").setScale(8);
+    }
+
     // Create plants first layer
     game.plants = this.physics.add.group();
     for (var i = 0; i < 5; i++) {
@@ -104,7 +117,7 @@ class Game extends Phaser.Scene {
       if (dir < 2000) {
         bird.flipX = true;
       }
-    }, Math.random() * this.birdMax);
+    }, Math.random() * (this.birdMax - 1000) + 1000);
 
     // Input
     game.cursors = this.input.keyboard.createCursorKeys();
@@ -215,6 +228,16 @@ class Game extends Phaser.Scene {
       frameRate: 10,
       repeat: 0
     });
+    this.anims.create({
+      key: "treeWind",
+      frames: [{
+        key: "tree1"
+      }, {
+        key: "tree2"
+      }],
+      frameRate: 10,
+      repeat: 0
+    });
 
     // Show time
     game.timerNumbers = this.physics.add.staticGroup();
@@ -273,7 +296,7 @@ class Game extends Phaser.Scene {
           game.plants.getChildren().forEach(plant => {
             plant.setTexture(plant.type ? "plant1" : "plant0");
           });
-        }, 8000);
+        }, 10000);
       }, Math.random() * 25000);
     }
 
@@ -366,21 +389,24 @@ class Game extends Phaser.Scene {
         }
       });
     }
+    if (game.wind.windy) {
+      game.tree.anims.play("treeWind", true);
+    }
   }
 }
 class Stage1 extends Game {
   constructor() {
-    super("Stage1", 8000, false, false);
+    super("Stage1", 8000, false, false, true, 1500);
   }
 }
 class Stage2 extends Game {
   constructor() {
-    super("Stage2", 5000, true, true);
+    super("Stage2", 5000, true, true, true, 1500);
   }
 }
 class Stage3 extends Game {
   constructor() {
-    super("Stage3", 3000, true, false);
+    super("Stage3", 3000, true, false, true, 1500);
   }
 }
 class GameOver extends Phaser.Scene {
