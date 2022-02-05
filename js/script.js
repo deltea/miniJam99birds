@@ -29,6 +29,7 @@ class Game extends Phaser.Scene {
     this.load.image("poop0", "assets/poop0.png");
     this.load.image("poop1", "assets/poop1.png");
     this.load.image("poop2", "assets/poop2.png");
+    this.load.image("cloud", "assets/cloud.png");
   }
   create() {
     let phaser = this;
@@ -147,6 +148,7 @@ class Game extends Phaser.Scene {
     });
     this.physics.add.collider(game.car, game.poop, (car, poop) => {
       poop.destroy();
+      phaser.cameras.main.shake(240, 0.01, false);
       game.poopTimes++;
       game.car.anims.play(`drive${game.poopTimes}`, true);
       if (game.poopTimes > 5) {
@@ -165,10 +167,23 @@ class Game extends Phaser.Scene {
         game.timer = 30;
         clearInterval(game.timerInterval);
         clearInterval(game.poopInterval);
+        clearInterval(game.cloudInterval);
         phaser.scene.stop(`Stage${game.currentStage}`);
-        phaser.scene.start(`Stage${game.currentStage + 1}`);
+        game.currentStage++;
+        phaser.scene.start(`Stage${game.currentStage}`);
       }
     }, 1000);
+
+    // Create clouds
+    game.clouds = this.physics.add.group();
+    game.cloudInterval = setInterval(function () {
+      let dir = Math.floor(Math.random() * 2) === 1 ? 0 : 2000;
+      let cloud = game.clouds.create(dir, Math.random() * 200, "cloud").setScale(8).setGravityY(-config.physics.arcade.gravity.y);
+      cloud.dir = dir;
+      if (Math.random() * 1 > 0.5) {
+        cloud.flipX = true;
+      }
+    }, 5000);
   }
   update() {
     if (!game.car.cantMove) {
@@ -192,6 +207,13 @@ class Game extends Phaser.Scene {
           poop.setOffset(1, 6);
         }
         bird.poopTimer = 100;
+      }
+    });
+    game.clouds.getChildren().forEach(cloud => {
+      if (cloud.dir > 0) {
+        cloud.x--;
+      } else {
+        cloud.x++;
       }
     });
   }
