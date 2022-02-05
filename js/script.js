@@ -49,8 +49,8 @@ class Game extends Phaser.Scene {
     this.load.image("tree0", "assets/tree0.png");
     this.load.image("tree1", "assets/tree1.png");
     this.load.image("tree2", "assets/tree2.png");
+    this.load.image("boss0", "assets/boss0.png");
     this.load.image("boss1", "assets/boss1.png");
-    this.load.image("boss2", "assets/boss2.png");
     this.load.image("bossPoop", "assets/bossPoop.png");
 
     this.load.image("0", "assets/0.png");
@@ -238,6 +238,16 @@ class Game extends Phaser.Scene {
       frameRate: 10,
       repeat: 0
     });
+    this.anims.create({
+      key: "boss",
+      frames: [{
+        key: "boss0"
+      }, {
+        key: "boss1"
+      }],
+      frameRate: 5,
+      repeat: 0
+    });
 
     // Show time
     game.timerNumbers = this.physics.add.staticGroup();
@@ -306,6 +316,12 @@ class Game extends Phaser.Scene {
       setTimeout(function () {
         game.oil.create(Math.random() * 2000, phaser.sys.game.canvas.height - 32, "oil").setGravityY(-config.physics.arcade.gravity.y).setScale(8);
       }, Math.random() * 25000);
+    }
+
+    // Boss bird
+    if (game.currentStage === 1) {
+      game.boss = this.physics.add.sprite(1000, 100, "boss0").setScale(8).setGravityY(-config.physics.arcade.gravity.y).setCollideWorldBounds(true);
+      game.boss.dir = false;
     }
 
     // Colliders
@@ -392,6 +408,18 @@ class Game extends Phaser.Scene {
     if (game.wind.windy) {
       game.tree.anims.play("treeWind", true);
     }
+    if (game.currentStage === 1) {
+      game.boss.anims.play("boss", true);
+      if (game.boss.dir) {
+        game.boss.x += 3;
+      } else {
+        game.boss.x -= 3;
+      }
+      if (game.boss.x <= 64 || game.boss.x > 2000 - 64) {
+        game.boss.dir = !game.boss.dir;
+        game.boss.flipX = !game.boss.flipX;
+      }
+    }
   }
 }
 class Stage1 extends Game {
@@ -407,6 +435,11 @@ class Stage2 extends Game {
 class Stage3 extends Game {
   constructor() {
     super("Stage3", 3000, true, false, true, 1500);
+  }
+}
+class Stage4 extends Game {
+  constructor() {
+    super("Stage4", 2000, false, false, false, 0);
   }
 }
 class GameOver extends Phaser.Scene {
