@@ -61,7 +61,7 @@ class Game extends Phaser.Scene {
     game.poop = this.physics.add.group();
     game.poopInterval = setInterval(function () {
       let dir = Math.floor(Math.random() * 2) === 1 ? 0 : 2000;
-      let bird = game.birds.create(dir, Math.random() * 300, "pigeon0").setScale(8).setGravityY(-config.physics.arcade.gravity.y);
+      let bird = game.birds.create(dir, Math.random() * phaser.sys.game.canvas.height / 2, "pigeon0").setScale(8).setGravityY(-config.physics.arcade.gravity.y);
       bird.setVelocityX(dir > 0 ? -100 : 100);
       bird.poopTimer = 100;
       bird.dir = dir;
@@ -168,7 +168,7 @@ class Game extends Phaser.Scene {
           clearInterval(game.timerInterval);
           clearInterval(game.poopInterval);
           clearInterval(game.cloudInterval);
-          phaser.scene.stop(`Stage${game.currentStage}`);
+          phaser.scene.stop();
           phaser.scene.start("GameOver");
         }, 2000);
       }
@@ -182,8 +182,12 @@ class Game extends Phaser.Scene {
         clearInterval(game.timerInterval);
         clearInterval(game.poopInterval);
         clearInterval(game.cloudInterval);
-        phaser.scene.stop(`Stage${game.currentStage}`);
         game.currentStage++;
+        if (game.currentStage > 3) {
+          phaser.scene.stop();
+          phaser.scene.start("Win");
+        }
+        phaser.scene.stop();
         phaser.scene.start(`Stage${game.currentStage}`);
       }
     }, 1000);
@@ -192,7 +196,7 @@ class Game extends Phaser.Scene {
     game.clouds = this.physics.add.group();
     game.cloudInterval = setInterval(function () {
       let dir = Math.floor(Math.random() * 2) === 1 ? 0 : 2000;
-      let cloud = game.clouds.create(dir, Math.random() * 300, "cloud").setScale(8).setGravityY(-config.physics.arcade.gravity.y);
+      let cloud = game.clouds.create(dir, Math.random() * phaser.sys.game.canvas.height / 2, "cloud").setScale(8).setGravityY(-config.physics.arcade.gravity.y);
       cloud.dir = dir;
       if (Math.random() * 1 > 0.5) {
         cloud.flipX = true;
@@ -234,17 +238,17 @@ class Game extends Phaser.Scene {
 }
 class Stage1 extends Game {
   constructor() {
-    super("Stage1", 10000);
+    super("Stage1", 5000);
   }
 }
 class Stage2 extends Game {
   constructor() {
-    super("Stage2", 8000);
+    super("Stage2", 3000);
   }
 }
 class Stage3 extends Game {
   constructor() {
-    super("Stage3", 5000);
+    super("Stage3", 1000);
   }
 }
 class GameOver extends Phaser.Scene {
@@ -259,7 +263,17 @@ class GameOver extends Phaser.Scene {
     this.add.image(this.sys.game.canvas.width / 2, (this.sys.game.canvas.height / 2) - 100, "gameOver").setScale(8);
     this.add.image(this.sys.game.canvas.width / 2, (this.sys.game.canvas.height / 2) + 100, "car10").setScale(8);
   }
-  update() {
-
+}
+class Win extends Phaser.Scene {
+  constructor() {
+    super("Win");
+  }
+  preload() {
+    this.load.image("goodJob", "assets/goodJob.png");
+    this.load.image("car0", "assets/car0.png");
+  }
+  create() {
+    this.add.image(this.sys.game.canvas.width / 2, (this.sys.game.canvas.height / 2) - 100, "goodJob").setScale(8);
+    this.add.image(this.sys.game.canvas.width / 2, (this.sys.game.canvas.height / 2) + 100, "car0").setScale(8);
   }
 }
