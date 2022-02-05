@@ -1,10 +1,12 @@
 // Damn Those Birds!
 let game = {
-  poopTimes: 0
+  poopTimes: 0,
+  currentStage: 1,
+  timer: 30
 };
 class Game extends Phaser.Scene {
-  constructor() {
-    super();
+  constructor(key) {
+    super(key);
   }
   preload() {
     this.load.image("car0", "assets/car0.png");
@@ -28,6 +30,7 @@ class Game extends Phaser.Scene {
     this.load.image("poop2", "assets/poop2.png");
   }
   create() {
+    let phaser = this;
     // Create plants first layer
     game.plants = this.physics.add.group();
     for (var i = 0; i < 5; i++) {
@@ -36,6 +39,7 @@ class Game extends Phaser.Scene {
 
     // Create the car
     game.car = this.physics.add.sprite(0, 0, "car0").setScale(8).setCollideWorldBounds(true).setSize(16, 8).setOffset(0, 0).setDrag(800);
+    game.car.cantMove = false;
 
     // Create plants second layer
     for (var i = 0; i < 5; i++) {
@@ -45,7 +49,7 @@ class Game extends Phaser.Scene {
     // Create birds
     game.birds = this.physics.add.group();
     game.poop = this.physics.add.group();
-    setInterval(function () {
+    game.poopInterval = setInterval(function () {
       let dir = Math.floor(Math.random() * 2) === 1 ? 0 : 2000;
       let bird = game.birds.create(dir, Math.random() * 200, "pigeon0").setScale(8).setGravityY(-config.physics.arcade.gravity.y);
       bird.setVelocityX(dir > 0 ? -100 : 100);
@@ -144,22 +148,43 @@ class Game extends Phaser.Scene {
       poop.destroy();
       game.poopTimes++;
       game.car.anims.play(`drive${game.poopTimes}`, true);
+      if (game.poopTimes > 5) {
+        game.car.cantMove = true;
+        setTimeout(function () {
+          phaser.scene.stop(`Stage${game.currentStage}`);
+          phaser.scene.start("GameOver");
+        }, 2000);
+      }
     });
+
+    // Timer
+    game.timerInterval = setInterval(function () {
+      game.timer--;
+      console.log(game.timer);
+      if (game.timer <= 0) {
+        game.timer = 30;
+        clearInterval(game.timerInterval);
+        clearInterval(game.poopInterval);
+        phaser.scene.stop(`Stage${game.currentStage}`);
+        phaser.scene.start(`Stage${game.currentStage + 1}`);
+      }
+    }, 1000);
   }
   update() {
-    if (game.cursors.right.isDown) {
-      game.car.setVelocityX(500);
-      game.car.flipX = true;
-      game.car.anims.play(`drive${game.poopTimes}`, true);
-    } else if (game.cursors.left.isDown) {
-      game.car.setVelocityX(-500);
-      game.car.flipX = false;
-      game.car.anims.play(`drive${game.poopTimes}`, true);
+    if (!game.car.cantMove) {
+      if (game.cursors.right.isDown) {
+        game.car.setVelocityX(500);
+        game.car.flipX = true;
+        game.car.anims.play(`drive${game.poopTimes}`, true);
+      } else if (game.cursors.left.isDown) {
+        game.car.setVelocityX(-500);
+        game.car.flipX = false;
+        game.car.anims.play(`drive${game.poopTimes}`, true);
+      }
     }
     game.birds.getChildren().forEach(bird => {
       bird.poopTimer--;
       bird.anims.play("pigeonFly", true);
-      console.log(bird.poopTimer);
       if (bird.poopTimer <= 0) {
         let poop = game.poop.create(bird.x, bird.y, "poop0").setScale(8).setSize(1, 1).setOffset(6, 6);
         if (bird.dir < 2000) {
@@ -169,5 +194,29 @@ class Game extends Phaser.Scene {
         bird.poopTimer = 100;
       }
     });
+  }
+}
+class Stage1 extends Game {
+  constructor() {
+    super("Stage1");
+  }
+}
+class Stage2 extends Game {
+  constructor() {
+    super("Stage2");
+  }
+}
+class GameOver extends Phaser.Scene {
+  constructor() {
+    super("GameOver");
+  }
+  preload() {
+
+  }
+  create() {
+
+  }
+  update() {
+
   }
 }
