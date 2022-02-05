@@ -38,7 +38,7 @@ class Game extends Phaser.Scene {
     }
 
     // Create the car
-    game.car = this.physics.add.sprite(0, 0, "car0").setScale(8).setCollideWorldBounds(true).setSize(16, 8).setOffset(0, 0).setDrag(800);
+    game.car = this.physics.add.sprite(1000, this.sys.game.canvas.height - 32, "car0").setScale(8).setCollideWorldBounds(true).setSize(16, 8).setOffset(0, 0).setDrag(800);
     game.car.cantMove = false;
 
     // Create plants second layer
@@ -160,7 +160,6 @@ class Game extends Phaser.Scene {
     // Timer
     game.timerInterval = setInterval(function () {
       game.timer--;
-      console.log(game.timer);
       if (game.timer <= 0) {
         game.timer = 30;
         clearInterval(game.timerInterval);
