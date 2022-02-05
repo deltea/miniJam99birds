@@ -3,12 +3,18 @@ let game = {
   poopTimes: 0,
   currentStage: 1,
   timer: 30,
-  sfx: {}
+  sfx: {},
+  wind: {
+    windy: false,
+    windSpeed: 800,
+    direction: false
+  }
 };
 class Game extends Phaser.Scene {
-  constructor(key, birdMax) {
+  constructor(key, birdMax, hasWind) {
     super(key);
     this.birdMax = birdMax;
+    this.hasWind = hasWind;
   }
   preload() {
     this.load.image("car0", "assets/car0.png");
@@ -24,7 +30,11 @@ class Game extends Phaser.Scene {
     this.load.image("car10", "assets/car10.png");
     this.load.image("car11", "assets/car11.png");
     this.load.image("plant0", "assets/plant0.png");
+    this.load.image("plant0wind0", "assets/plant0wind0.png");
+    this.load.image("plant0wind1", "assets/plant0wind1.png");
     this.load.image("plant1", "assets/plant1.png");
+    this.load.image("plant1wind0", "assets/plant1wind0.png");
+    this.load.image("plant1wind1", "assets/plant1wind1.png");
     this.load.image("pigeon0", "assets/pigeon0.png");
     this.load.image("pigeon1", "assets/pigeon1.png");
     this.load.image("poop0", "assets/poop0.png");
@@ -39,7 +49,8 @@ class Game extends Phaser.Scene {
     // Create plants first layer
     game.plants = this.physics.add.group();
     for (var i = 0; i < 5; i++) {
-      game.plants.create(Math.random() * 2000, this.sys.game.canvas.height - 32, "plant0").setScale(8).setGravityY(-config.physics.arcade.gravity.y);
+      let plant = game.plants.create(Math.random() * 2000, this.sys.game.canvas.height - 32, "plant0").setScale(8).setGravityY(-config.physics.arcade.gravity.y);
+      plant.type = 0;
     }
 
     // Create the car
@@ -48,7 +59,8 @@ class Game extends Phaser.Scene {
 
     // Create plants second layer
     for (var i = 0; i < 5; i++) {
-      game.plants.create(Math.random() * 2000, this.sys.game.canvas.height - 32, "plant1").setScale(8).setGravityY(-config.physics.arcade.gravity.y);
+      let plant = game.plants.create(Math.random() * 2000, this.sys.game.canvas.height - 32, "plant1").setScale(8).setGravityY(-config.physics.arcade.gravity.y);
+      plant.type = 1;
     }
 
     // SFX
@@ -149,6 +161,26 @@ class Game extends Phaser.Scene {
       frameRate: 5,
       repeat: 0
     });
+    this.anims.create({
+      key: "plant0wind",
+      frames: [{
+        key: "plant0wind0"
+      }, {
+        key: "plant0wind1"
+      }],
+      frameRate: 10,
+      repeat: 0
+    });
+    this.anims.create({
+      key: "plant1wind",
+      frames: [{
+        key: "plant1wind0"
+      }, {
+        key: "plant1wind1"
+      }],
+      frameRate: 10,
+      repeat: 0
+    });
 
     // Colliders
     this.physics.add.collider(game.plants, game.plants, (plant1, plant2) => {
@@ -164,6 +196,7 @@ class Game extends Phaser.Scene {
       game.car.anims.play(`drive${game.poopTimes}`, true);
       if (game.poopTimes > 5) {
         game.car.cantMove = true;
+        game.wind.windy = false;
         setTimeout(function () {
           clearInterval(game.timerInterval);
           clearInterval(game.poopInterval);
@@ -182,6 +215,7 @@ class Game extends Phaser.Scene {
         clearInterval(game.timerInterval);
         clearInterval(game.poopInterval);
         clearInterval(game.cloudInterval);
+        game.wind.windy = false;
         game.currentStage++;
         if (game.currentStage > 3) {
           phaser.scene.stop();
@@ -202,6 +236,11 @@ class Game extends Phaser.Scene {
         cloud.flipX = true;
       }
     }, 5000);
+    if (this.hasWind) {
+      setTimeout(function () {
+        game.wind.windy = true;
+      }, Math.random() * 30000);
+    }
   }
   update() {
     if (!game.car.cantMove) {
@@ -219,7 +258,7 @@ class Game extends Phaser.Scene {
       bird.poopTimer--;
       bird.anims.play("pigeonFly", true);
       if (bird.poopTimer <= 0) {
-        let poop = game.poop.create(bird.x, bird.y, "poop0").setScale(8).setSize(1, 1).setOffset(6, 6);
+        let poop = game.poop.create(bird.x, bird.y, "poop0").setScale(8).setSize(1, 1).setOffset(6, 6).setGravityX(game.wind.windy ? (game.wind.direction ? game.wind.windSpeed : -game.wind.windSpeed) : 0);
         if (bird.dir < 2000) {
           poop.flipX = true;
           poop.setOffset(1, 6);
@@ -228,27 +267,40 @@ class Game extends Phaser.Scene {
       }
     });
     game.clouds.getChildren().forEach(cloud => {
+      let cloudSpeed = 1;
       if (cloud.dir > 0) {
-        cloud.x--;
+        cloud.x -= cloudSpeed;
       } else {
-        cloud.x++;
+        cloud.x += cloudSpeed;
       }
     });
+    if (game.wind.windy) {
+      game.plants.getChildren().forEach(plant => {
+        if (plant.type === 0) {
+          plant.anims.play("plant0wind", true);
+        } else {
+          plant.anims.play("plant1wind", true);
+        }
+        if (game.wind.direction === false) {
+          plant.flipX = true;
+        }
+      });
+    }
   }
 }
 class Stage1 extends Game {
   constructor() {
-    super("Stage1", 5000);
+    super("Stage1", 5000, true);
   }
 }
 class Stage2 extends Game {
   constructor() {
-    super("Stage2", 3000);
+    super("Stage2", 3000, true);
   }
 }
 class Stage3 extends Game {
   constructor() {
-    super("Stage3", 1000);
+    super("Stage3", 1000, true);
   }
 }
 class GameOver extends Phaser.Scene {
