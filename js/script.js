@@ -4,6 +4,7 @@ let game = {
   currentStage: 1,
   timer: 30,
   sfx: {},
+  carSpeed: 500,
   wind: {
     windy: false,
     windSpeed: 800,
@@ -11,10 +12,11 @@ let game = {
   }
 };
 class Game extends Phaser.Scene {
-  constructor(key, birdMax, hasWind) {
+  constructor(key, birdMax, hasWind, hasOil) {
     super(key);
     this.birdMax = birdMax;
     this.hasWind = hasWind;
+    this.hasOil = hasOil;
   }
   preload() {
     this.load.image("car0", "assets/car0.png");
@@ -41,6 +43,8 @@ class Game extends Phaser.Scene {
     this.load.image("blueJay1", "assets/blueJay1.png");
     this.load.image("poop", "assets/poop.png");
     this.load.image("cloud", "assets/cloud.png");
+    this.load.image("oil", "assets/oil.png");
+
     this.load.audio("hit", "assets/hit.wav");
     this.load.audio("wind", "assets/wind.wav");
     this.load.audio("music", "assets/music.mp3");
@@ -201,33 +205,6 @@ class Game extends Phaser.Scene {
       repeat: 0
     });
 
-    // Colliders
-    this.physics.add.collider(game.plants, game.plants, (plant1, plant2) => {
-      plant1.destroy();
-    });
-    this.physics.add.collider(game.car, game.poop, (car, poop) => {
-      game.sfx.hit.play({
-        volume: 1.5
-      });
-      poop.destroy();
-      phaser.cameras.main.shake(240, 0.01, false);
-      game.poopTimes++;
-      game.car.anims.play(`drive${game.poopTimes}`, true);
-      if (game.poopTimes > 5) {
-        game.car.cantMove = true;
-        game.wind.windy = false;
-        setTimeout(function () {
-          game.sfx.wind.stop();
-          game.sfx.music.stop();
-          clearInterval(game.timerInterval);
-          clearInterval(game.birdInterval);
-          clearInterval(game.cloudInterval);
-          phaser.scene.stop();
-          phaser.scene.start("GameOver");
-        }, 2000);
-      }
-    });
-
     // Timer
     game.timerInterval = setInterval(function () {
       game.timer--;
@@ -274,15 +251,54 @@ class Game extends Phaser.Scene {
         }, 8000);
       }, Math.random() * 25000);
     }
+
+    // Create oil
+    game.oil = this.physics.add.group();
+    if (this.hasOil) {
+      setTimeout(function () {
+        game.oil.create(Math.random() * 2000, phaser.sys.game.canvas.height - 32, "oil").setGravityY(-config.physics.arcade.gravity.y).setScale(8);
+      }, Math.random() * 25000);
+    }
+
+    // Colliders
+    this.physics.add.collider(game.plants, game.plants, (plant1, plant2) => {
+      plant1.destroy();
+    });
+    this.physics.add.collider(game.car, game.oil, (car, oil) => {
+      oil.destroy();
+      game.carSpeed += 200;
+    });
+    this.physics.add.collider(game.car, game.poop, (car, poop) => {
+      game.sfx.hit.play({
+        volume: 1.5
+      });
+      poop.destroy();
+      phaser.cameras.main.shake(240, 0.01, false);
+      game.poopTimes++;
+      game.car.anims.play(`drive${game.poopTimes}`, true);
+      if (game.poopTimes > 5) {
+        game.car.cantMove = true;
+        game.wind.windy = false;
+        setTimeout(function () {
+          game.sfx.wind.stop();
+          game.sfx.music.stop();
+          clearInterval(game.timerInterval);
+          clearInterval(game.birdInterval);
+          clearInterval(game.cloudInterval);
+          phaser.scene.stop();
+          phaser.scene.start("GameOver");
+        }, 2000);
+      }
+    });
   }
   update() {
     if (!game.car.cantMove) {
       if (game.cursors.right.isDown) {
-        game.car.setVelocityX(500);
+        game.car.setVelocityX(game.carSpeed);
         game.car.flipX = true;
         game.car.anims.play(`drive${game.poopTimes}`, true);
       } else if (game.cursors.left.isDown) {
-        game.car.setVelocityX(-500);
+        game.car.setVelocityX(-game.carSpeed);
         game.car.flipX = false;
         game.car.anims.play(`drive${game.poopTimes}`, true);
       }
@@ -329,17 +345,17 @@ class Game extends Phaser.Scene {
 }
 class Stage1 extends Game {
   constructor() {
-    super("Stage1", 8000, false);
+    super("Stage1", 8000, false, false);
   }
 }
 class Stage2 extends Game {
   constructor() {
-    super("Stage2", 5000, true);
+    super("Stage2", 5000, true, true);
   }
 }
 class Stage3 extends Game {
   constructor() {
-    super("Stage3", 3000, true);
+    super("Stage3", 3000, true, false);
   }
 }
 class GameOver extends Phaser.Scene {
