@@ -2,7 +2,8 @@
 let game = {
   poopTimes: 0,
   currentStage: 1,
-  timer: 30
+  timer: 30,
+  sfx: {}
 };
 class Game extends Phaser.Scene {
   constructor(key, birdMax) {
@@ -30,6 +31,8 @@ class Game extends Phaser.Scene {
     this.load.image("poop1", "assets/poop1.png");
     this.load.image("poop2", "assets/poop2.png");
     this.load.image("cloud", "assets/cloud.png");
+    this.load.audio("hit", "assets/hit.wav");
+    this.load.audio("music", "assets/music.mp3");
   }
   create() {
     let phaser = this;
@@ -48,12 +51,17 @@ class Game extends Phaser.Scene {
       game.plants.create(Math.random() * 2000, this.sys.game.canvas.height - 32, "plant1").setScale(8).setGravityY(-config.physics.arcade.gravity.y);
     }
 
+    // SFX
+    game.sfx.hit = this.sound.add("hit");
+    game.sfx.music = this.sound.add("music").setLoop(true);
+    game.sfx.music.play();
+
     // Create birds
     game.birds = this.physics.add.group();
     game.poop = this.physics.add.group();
     game.poopInterval = setInterval(function () {
       let dir = Math.floor(Math.random() * 2) === 1 ? 0 : 2000;
-      let bird = game.birds.create(dir, Math.random() * 200, "pigeon0").setScale(8).setGravityY(-config.physics.arcade.gravity.y);
+      let bird = game.birds.create(dir, Math.random() * 300, "pigeon0").setScale(8).setGravityY(-config.physics.arcade.gravity.y);
       bird.setVelocityX(dir > 0 ? -100 : 100);
       bird.poopTimer = 100;
       bird.dir = dir;
@@ -147,6 +155,9 @@ class Game extends Phaser.Scene {
       plant1.destroy();
     });
     this.physics.add.collider(game.car, game.poop, (car, poop) => {
+      game.sfx.hit.play({
+        volume: 1.5
+      });
       poop.destroy();
       phaser.cameras.main.shake(240, 0.01, false);
       game.poopTimes++;
@@ -178,7 +189,7 @@ class Game extends Phaser.Scene {
     game.clouds = this.physics.add.group();
     game.cloudInterval = setInterval(function () {
       let dir = Math.floor(Math.random() * 2) === 1 ? 0 : 2000;
-      let cloud = game.clouds.create(dir, Math.random() * 200, "cloud").setScale(8).setGravityY(-config.physics.arcade.gravity.y);
+      let cloud = game.clouds.create(dir, Math.random() * 300, "cloud").setScale(8).setGravityY(-config.physics.arcade.gravity.y);
       cloud.dir = dir;
       if (Math.random() * 1 > 0.5) {
         cloud.flipX = true;
