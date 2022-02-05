@@ -37,9 +37,9 @@ class Game extends Phaser.Scene {
     this.load.image("plant1wind1", "assets/plant1wind1.png");
     this.load.image("pigeon0", "assets/pigeon0.png");
     this.load.image("pigeon1", "assets/pigeon1.png");
-    this.load.image("poop0", "assets/poop0.png");
-    this.load.image("poop1", "assets/poop1.png");
-    this.load.image("poop2", "assets/poop2.png");
+    this.load.image("blueJay0", "assets/blueJay0.png");
+    this.load.image("blueJay1", "assets/blueJay1.png");
+    this.load.image("poop", "assets/poop.png");
     this.load.image("cloud", "assets/cloud.png");
     this.load.audio("hit", "assets/hit.wav");
     this.load.audio("wind", "assets/wind.wav");
@@ -73,11 +73,18 @@ class Game extends Phaser.Scene {
     // Create birds
     game.birds = this.physics.add.group();
     game.poop = this.physics.add.group();
-    game.poopInterval = setInterval(function () {
+    game.birdInterval = setInterval(function () {
       let dir = Math.floor(Math.random() * 2) === 1 ? 0 : 2000;
-      let bird = game.birds.create(dir, Math.random() * phaser.sys.game.canvas.height / 2, "pigeon0").setScale(8).setGravityY(-config.physics.arcade.gravity.y);
-      bird.setVelocityX(dir > 0 ? -100 : 100);
-      bird.poopTimer = 100;
+      let type = Math.random() * 1 > 0.5 ? "blueJay" : "pigeon";
+      let bird = game.birds.create(dir, Math.random() * phaser.sys.game.canvas.height / 2, `${type}0`).setScale(8).setGravityY(-config.physics.arcade.gravity.y);
+      bird.type = type;
+      if (bird.type === "blueJay") {
+        bird.setVelocityX(dir > 0 ? -200 : 200);
+        bird.poopTimer = 50;
+      } else {
+        bird.setVelocityX(dir > 0 ? -100 : 100);
+        bird.poopTimer = 100;
+      }
       bird.dir = dir;
       if (dir < 2000) {
         bird.flipX = true;
@@ -164,6 +171,16 @@ class Game extends Phaser.Scene {
       repeat: 0
     });
     this.anims.create({
+      key: "blueJayFly",
+      frames: [{
+        key: "blueJay1"
+      }, {
+        key: "blueJay0"
+      }],
+      frameRate: 10,
+      repeat: 0
+    });
+    this.anims.create({
       key: "plant0wind",
       frames: [{
         key: "plant0wind0"
@@ -203,7 +220,7 @@ class Game extends Phaser.Scene {
           game.sfx.wind.stop();
           game.sfx.music.stop();
           clearInterval(game.timerInterval);
-          clearInterval(game.poopInterval);
+          clearInterval(game.birdInterval);
           clearInterval(game.cloudInterval);
           phaser.scene.stop();
           phaser.scene.start("GameOver");
@@ -217,7 +234,7 @@ class Game extends Phaser.Scene {
       if (game.timer <= 0) {
         game.timer = 30;
         clearInterval(game.timerInterval);
-        clearInterval(game.poopInterval);
+        clearInterval(game.birdInterval);
         clearInterval(game.cloudInterval);
         game.wind.windy = false;
         game.sfx.music.stop();
@@ -272,17 +289,20 @@ class Game extends Phaser.Scene {
     }
     game.birds.getChildren().forEach(bird => {
       bird.poopTimer--;
-      bird.anims.play("pigeonFly", true);
+      bird.anims.play(`${bird.type}Fly`, true);
       if (bird.x < 0 || bird.x > 2000) {
         bird.destroy();
       }
       if (bird.poopTimer <= 0) {
-        let poop = game.poop.create(bird.x, bird.y, "poop0").setScale(8).setSize(1, 1).setOffset(6, 6).setGravityX(game.wind.windy ? (game.wind.direction ? game.wind.windSpeed : -game.wind.windSpeed) : 0);
+        let poop = game.poop.create(bird.x, bird.y, "poop").setScale(8).setSize(1, 1).setOffset(6, 6).setGravityX(game.wind.windy ? (game.wind.direction ? game.wind.windSpeed : -game.wind.windSpeed) : 0);
         if (bird.dir < 2000) {
           poop.flipX = true;
           poop.setOffset(1, 6);
         }
         bird.poopTimer = 100;
+        if (bird.type === "blueJay") {
+          bird.poopTimer = 50;
+        }
       }
     });
     game.clouds.getChildren().forEach(cloud => {
