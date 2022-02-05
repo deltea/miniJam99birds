@@ -42,7 +42,7 @@ class Game extends Phaser.Scene {
       if (dir < 2000) {
         bird.flipX = true;
       }
-    }, Math.random() * 5000);
+    }, Math.random() * 10000);
 
     // Input
     game.cursors = this.input.keyboard.createCursorKeys();
@@ -63,13 +63,23 @@ class Game extends Phaser.Scene {
       frameRate: 5,
       repeat: 0
     });
+    this.anims.create({
+      key: "pigeonFly",
+      frames: [{
+        key: "pigeon1"
+      }, {
+        key: "pigeon0"
+      }],
+      frameRate: 5,
+      repeat: 0
+    });
 
     // Colliders
     this.physics.add.collider(game.plants, game.plants, (plant1, plant2) => {
       plant1.destroy();
     });
     this.physics.add.collider(game.car, game.poop, (car, poop) => {
-      
+      poop.destroy();
     });
   }
   update() {
@@ -84,6 +94,7 @@ class Game extends Phaser.Scene {
     }
     game.birds.getChildren().forEach(bird => {
       bird.poopTimer--;
+      bird.anims.play("pigeonFly", true);
       console.log(bird.poopTimer);
       if (bird.poopTimer <= 0) {
         let poop = game.poop.create(bird.x, bird.y, "poop0").setScale(8).setSize(1, 1).setOffset(6, 6);
