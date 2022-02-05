@@ -165,6 +165,9 @@ class Game extends Phaser.Scene {
       if (game.poopTimes > 5) {
         game.car.cantMove = true;
         setTimeout(function () {
+          clearInterval(game.timerInterval);
+          clearInterval(game.poopInterval);
+          clearInterval(game.cloudInterval);
           phaser.scene.stop(`Stage${game.currentStage}`);
           phaser.scene.start("GameOver");
         }, 2000);
@@ -249,10 +252,12 @@ class GameOver extends Phaser.Scene {
     super("GameOver");
   }
   preload() {
-
+    this.load.image("gameOver", "assets/gameOver.png");
+    this.load.image("car10", "assets/car10.png");
   }
   create() {
-
+    this.add.image(this.sys.game.canvas.width / 2, (this.sys.game.canvas.height / 2) - 100, "gameOver").setScale(8);
+    this.add.image(this.sys.game.canvas.width / 2, (this.sys.game.canvas.height / 2) + 100, "car10").setScale(8);
   }
   update() {
 
