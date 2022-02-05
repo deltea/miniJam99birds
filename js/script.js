@@ -5,8 +5,9 @@ let game = {
   timer: 30
 };
 class Game extends Phaser.Scene {
-  constructor(key) {
+  constructor(key, birdMax) {
     super(key);
+    this.birdMax = birdMax;
   }
   preload() {
     this.load.image("car0", "assets/car0.png");
@@ -58,7 +59,7 @@ class Game extends Phaser.Scene {
       if (dir < 2000) {
         bird.flipX = true;
       }
-    }, Math.random() * 10000);
+    }, Math.random() * this.birdMax);
 
     // Input
     game.cursors = this.input.keyboard.createCursorKeys();
@@ -197,12 +198,17 @@ class Game extends Phaser.Scene {
 }
 class Stage1 extends Game {
   constructor() {
-    super("Stage1");
+    super("Stage1", 10000);
   }
 }
 class Stage2 extends Game {
   constructor() {
-    super("Stage2");
+    super("Stage2", 8000);
+  }
+}
+class Stage3 extends Game {
+  constructor() {
+    super("Stage3", 5000);
   }
 }
 class GameOver extends Phaser.Scene {
