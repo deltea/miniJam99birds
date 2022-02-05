@@ -45,6 +45,17 @@ class Game extends Phaser.Scene {
     this.load.image("cloud", "assets/cloud.png");
     this.load.image("oil", "assets/oil.png");
 
+    this.load.image("0", "assets/0.png");
+    this.load.image("1", "assets/1.png");
+    this.load.image("2", "assets/2.png");
+    this.load.image("3", "assets/3.png");
+    this.load.image("4", "assets/4.png");
+    this.load.image("5", "assets/5.png");
+    this.load.image("6", "assets/6.png");
+    this.load.image("7", "assets/7.png");
+    this.load.image("8", "assets/8.png");
+    this.load.image("9", "assets/9.png");
+
     this.load.audio("hit", "assets/hit.wav");
     this.load.audio("wind", "assets/wind.wav");
     this.load.audio("music", "assets/music.mp3");
@@ -205,9 +216,23 @@ class Game extends Phaser.Scene {
       repeat: 0
     });
 
+    // Show time
+    game.timerNumbers = this.physics.add.staticGroup();
+    let numberArray = String(game.timer).split("");
+    for (var i = 0; i < numberArray.length; i++) {
+      game.timerNumbers.create((i * 40) + 40, 50, numberArray[i]).setScale(8).setScrollFactor(0);
+    }
+
     // Timer
     game.timerInterval = setInterval(function () {
       game.timer--;
+      let numberArray = String(game.timer).split("");
+      for (var i = 0; i < game.timerNumbers.getChildren().length; i++) {
+        game.timerNumbers.getChildren()[i].visible = false;
+      }
+      for (var x = 0; x < numberArray.length; x++) {
+        game.timerNumbers.create((x * 40) + 40, 50, numberArray[x]).setScale(8).setScrollFactor(0);
+      }
       if (game.timer <= 0) {
         game.timer = 30;
         clearInterval(game.timerInterval);
