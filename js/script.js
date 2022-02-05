@@ -1,5 +1,7 @@
 // Damn Those Birds!
-let game = {};
+let game = {
+  poopTimes: 0
+};
 class Game extends Phaser.Scene {
   constructor() {
     super();
@@ -7,6 +9,16 @@ class Game extends Phaser.Scene {
   preload() {
     this.load.image("car0", "assets/car0.png");
     this.load.image("car1", "assets/car1.png");
+    this.load.image("car2", "assets/car2.png");
+    this.load.image("car3", "assets/car3.png");
+    this.load.image("car4", "assets/car4.png");
+    this.load.image("car5", "assets/car5.png");
+    this.load.image("car6", "assets/car6.png");
+    this.load.image("car7", "assets/car7.png");
+    this.load.image("car8", "assets/car8.png");
+    this.load.image("car9", "assets/car9.png");
+    this.load.image("car10", "assets/car10.png");
+    this.load.image("car11", "assets/car11.png");
     this.load.image("plant0", "assets/plant0.png");
     this.load.image("plant1", "assets/plant1.png");
     this.load.image("pigeon0", "assets/pigeon0.png");
@@ -54,11 +66,61 @@ class Game extends Phaser.Scene {
 
     // Animation
     this.anims.create({
-      key: "drive",
+      key: "drive0",
       frames: [{
         key: "car1"
       }, {
         key: "car0"
+      }],
+      frameRate: 5,
+      repeat: 0
+    });
+    this.anims.create({
+      key: "drive1",
+      frames: [{
+        key: "car3"
+      }, {
+        key: "car2"
+      }],
+      frameRate: 5,
+      repeat: 0
+    });
+    this.anims.create({
+      key: "drive2",
+      frames: [{
+        key: "car5"
+      }, {
+        key: "car4"
+      }],
+      frameRate: 5,
+      repeat: 0
+    });
+    this.anims.create({
+      key: "drive3",
+      frames: [{
+        key: "car7"
+      }, {
+        key: "car6"
+      }],
+      frameRate: 5,
+      repeat: 0
+    });
+    this.anims.create({
+      key: "drive4",
+      frames: [{
+        key: "car9"
+      }, {
+        key: "car8"
+      }],
+      frameRate: 5,
+      repeat: 0
+    });
+    this.anims.create({
+      key: "drive5",
+      frames: [{
+        key: "car11"
+      }, {
+        key: "car10"
       }],
       frameRate: 5,
       repeat: 0
@@ -80,17 +142,19 @@ class Game extends Phaser.Scene {
     });
     this.physics.add.collider(game.car, game.poop, (car, poop) => {
       poop.destroy();
+      game.poopTimes++;
+      game.car.anims.play(`drive${game.poopTimes}`, true);
     });
   }
   update() {
     if (game.cursors.right.isDown) {
       game.car.setVelocityX(500);
       game.car.flipX = true;
-      game.car.anims.play("drive", true);
+      game.car.anims.play(`drive${game.poopTimes}`, true);
     } else if (game.cursors.left.isDown) {
       game.car.setVelocityX(-500);
       game.car.flipX = false;
-      game.car.anims.play("drive", true);
+      game.car.anims.play(`drive${game.poopTimes}`, true);
     }
     game.birds.getChildren().forEach(bird => {
       bird.poopTimer--;
