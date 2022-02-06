@@ -4,6 +4,7 @@ let game = {
   currentStage: 1,
   timer: 30,
   sfx: {},
+  deaths: 0,
   carSpeed: 500,
   wind: {
     windy: false,
@@ -64,6 +65,7 @@ class Game extends Phaser.Scene {
     this.load.image("stage6", "assets/stage6.png");
     this.load.image("toucan0", "assets/toucan0.png");
     this.load.image("toucan1", "assets/toucan1.png");
+    this.load.image("mountains", "assets/mountains.png");
 
     this.load.image("0", "assets/0.png");
     this.load.image("1", "assets/1.png");
@@ -85,6 +87,11 @@ class Game extends Phaser.Scene {
   }
   create() {
     let phaser = this;
+    // Create mountains
+    for (var i = 0; i < 6; i++) {
+      this.add.image(128 + (i * 512), this.sys.game.canvas.height - 100, "mountains").setScale(8).setScrollFactor(0.5);
+    }
+
     // Create tree
     if (this.hasTree) {
       game.tree = this.physics.add.staticSprite(this.treePos, this.sys.game.canvas.height - 256, "tree0").setScale(8);
@@ -114,7 +121,7 @@ class Game extends Phaser.Scene {
     game.sfx.levelUp = this.sound.add("levelUp").play();
     game.sfx.wind = this.sound.add("wind").setLoop(true);
     game.sfx.music = this.sound.add("music").setLoop(true);
-    if (game.currentStage === 1) {
+    if (game.currentStage === 1 && game.deaths < 1) {
       game.sfx.music.play();
     }
 
@@ -403,6 +410,7 @@ class Game extends Phaser.Scene {
       if (game.poopTimes > 5) {
         game.car.cantMove = true;
         game.wind.windy = false;
+        game.deaths++;
         setTimeout(function () {
           game.sfx.wind.stop();
           game.sfx.music.stop();
@@ -425,6 +433,7 @@ class Game extends Phaser.Scene {
       if (game.poopTimes > 5) {
         game.car.cantMove = true;
         game.wind.windy = false;
+        game.deaths++;
         setTimeout(function () {
           game.sfx.wind.stop();
           game.sfx.wind.stop();
@@ -575,9 +584,36 @@ class Title extends Phaser.Scene {
   preload() {
     this.load.image("title", "assets/title.png");
     this.load.image("start", "assets/start.png");
+    this.load.image("mountains", "assets/mountains.png");
+    this.load.image("pigeon0", "assets/pigeon0.png");
+    this.load.image("pigeon1", "assets/pigeon1.png");
+    this.load.image("car0", "assets/car0.png");
   }
   create() {
     let phaser = this;
+    for (var i = 0; i < 5; i++) {
+      this.add.image(128 + (i * 512), this.sys.game.canvas.height - 100, "mountains").setScale(8);
+    }
+    game.birds = this.physics.add.group();
+    game.birdInterval = setInterval(function () {
+      let dir = Math.floor(Math.random() * 2) === 1 ? 0 : 2000;
+      let bird = game.birds.create(dir, Math.random() * phaser.sys.game.canvas.height / 2, "pigeon0").setScale(8).setGravityY(-config.physics.arcade.gravity.y);
+      bird.setVelocityX(dir > 0 ? -150 : 150);
+      if (dir < 2000) {
+        bird.flipX = true;
+      }
+    }, 3000);
+    this.add.image(this.sys.game.canvas.width / 2, this.sys.game.canvas.height, "car0").setScale(8);
+    this.anims.create({
+      key: "pigeonFly",
+      frames: [{
+        key: "pigeon1"
+      }, {
+        key: "pigeon0"
+      }],
+      frameRate: 5,
+      repeat: 0
+    });
     game.title = this.add.image(this.sys.game.canvas.width / 2, (this.sys.game.canvas.height / 2) - 100, "title").setScale(8);
     game.title.hover = this.tweens.add({
       targets: game.title,
@@ -589,8 +625,14 @@ class Title extends Phaser.Scene {
     });
     this.add.image(this.sys.game.canvas.width / 2, (this.sys.game.canvas.height / 2) + 100, "start").setScale(4);
     this.input.on("pointerdown", () => {
+      clearInterval(game.birdInterval);
       phaser.scene.stop();
       phaser.scene.start("Stage1");
+    });
+  }
+  update() {
+    game.birds.getChildren().forEach(bird => {
+      bird.anims.play("pigeonFly", true);
     });
   }
 }
