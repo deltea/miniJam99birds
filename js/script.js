@@ -136,7 +136,7 @@ class Game extends Phaser.Scene {
       if (dir < 2000) {
         bird.flipX = true;
       }
-    }, Math.random() * this.birdMax);
+    }, Math.random() * (this.birdMax - 1000) + 1000);
 
     // Input
     game.cursors = this.input.keyboard.createCursorKeys();
@@ -326,6 +326,7 @@ class Game extends Phaser.Scene {
     if (this.hasWind) {
       setTimeout(function () {
         game.wind.windy = true;
+        game.wind.direction = Math.random() * 1 > 0.5 ? true : false;
         game.sfx.wind.play({
           volume: 0.1
         });
@@ -358,7 +359,14 @@ class Game extends Phaser.Scene {
     // Create stage message
     game.stageMessage = this.add.image(this.sys.game.canvas.width / 2, this.sys.game.canvas.height / 2, `stage${game.currentStage}`).setScale(8).setScrollFactor(0);
     setTimeout(function () {
-      game.stageMessage.destroy();
+      game.stageMessage.moveToCorner = phaser.tweens.add({
+        targets: game.stageMessage,
+        y: 160,
+        x: phaser.sys.game.canvas.width - 150,
+        ease: "Quad.easeInOut",
+        duration: 600,
+        repeat: 0
+      });
     }, 1000);
 
     // Colliders
