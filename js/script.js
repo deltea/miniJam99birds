@@ -319,9 +319,11 @@ class Game extends Phaser.Scene {
     }
 
     // Boss bird
-    if (game.currentStage === 1) {
+    if (game.currentStage === 4) {
       game.boss = this.physics.add.sprite(1000, 100, "boss0").setScale(8).setGravityY(-config.physics.arcade.gravity.y).setCollideWorldBounds(true);
       game.boss.dir = false;
+      game.boss.poopTimer = 30;
+      game.bossPoop = this.physics.add.group();
     }
 
     // Colliders
@@ -333,6 +335,28 @@ class Game extends Phaser.Scene {
       game.carSpeed += 200;
     });
     this.physics.add.collider(game.car, game.poop, (car, poop) => {
+      game.sfx.hit.play({
+        volume: 1.5
+      });
+      poop.destroy();
+      phaser.cameras.main.shake(240, 0.01, false);
+      game.poopTimes++;
+      game.car.anims.play(`drive${game.poopTimes}`, true);
+      if (game.poopTimes > 5) {
+        game.car.cantMove = true;
+        game.wind.windy = false;
+        setTimeout(function () {
+          game.sfx.wind.stop();
+          game.sfx.music.stop();
+          clearInterval(game.timerInterval);
+          clearInterval(game.birdInterval);
+          clearInterval(game.cloudInterval);
+          phaser.scene.stop();
+          phaser.scene.start("GameOver");
+        }, 2000);
+      }
+    });
+    this.physics.add.collider(game.car, game.bossPoop, (car, poop) => {
       game.sfx.hit.play({
         volume: 1.5
       });
@@ -408,12 +432,17 @@ class Game extends Phaser.Scene {
     if (game.wind.windy) {
       game.tree.anims.play("treeWind", true);
     }
-    if (game.currentStage === 1) {
+    if (game.currentStage === 4) {
       game.boss.anims.play("boss", true);
+      game.boss.poopTimer--;
+      if (game.boss.poopTimer <= 0) {
+        game.bossPoop.create(game.boss.x, game.boss.y, "bossPoop").setScale(8).setSize(3, 3).setOffset(5, 3);
+        game.boss.poopTimer = 30;
+      }
       if (game.boss.dir) {
-        game.boss.x += 3;
+        game.boss.x += 5;
       } else {
-        game.boss.x -= 3;
+        game.boss.x -= 5;
       }
       if (game.boss.x <= 64 || game.boss.x > 2000 - 64) {
         game.boss.dir = !game.boss.dir;
