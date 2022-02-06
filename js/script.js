@@ -491,6 +491,14 @@ class Title extends Phaser.Scene {
   create() {
     let phaser = this;
     game.title = this.add.image(this.sys.game.canvas.width / 2, (this.sys.game.canvas.height / 2) - 100, "title").setScale(8);
+    game.title.hover = this.tweens.add({
+      targets: game.title,
+      y: (this.sys.game.canvas.height / 2) - 120,
+      ease: "Quad.easeInOut",
+      duration: 600,
+      repeat: -1,
+      yoyo: true
+    });
     this.add.image(this.sys.game.canvas.width / 2, (this.sys.game.canvas.height / 2) + 100, "start").setScale(4);
     this.input.on("pointerdown", () => {
       phaser.scene.stop();
