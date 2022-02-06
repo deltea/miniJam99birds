@@ -486,14 +486,16 @@ class Title extends Phaser.Scene {
   }
   preload() {
     this.load.image("title", "assets/title.png");
+    this.load.image("start", "assets/start.png");
   }
   create() {
     let phaser = this;
-    game.title = this.add.image(this.sys.game.canvas.width / 2, this.sys.game.canvas.height / 2, "title").setScale(8);
-    setTimeout(function () {
+    game.title = this.add.image(this.sys.game.canvas.width / 2, (this.sys.game.canvas.height / 2) - 100, "title").setScale(8);
+    this.add.image(this.sys.game.canvas.width / 2, (this.sys.game.canvas.height / 2) + 100, "start").setScale(4);
+    this.input.on("pointerdown", () => {
       phaser.scene.stop();
       phaser.scene.start("Stage1");
-    }, 1500);
+    });
   }
 }
 class GameOver extends Phaser.Scene {
