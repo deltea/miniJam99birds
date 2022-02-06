@@ -58,6 +58,8 @@ class Game extends Phaser.Scene {
     this.load.image("stage4", "assets/stage4.png");
     this.load.image("stage5", "assets/stage5.png");
     this.load.image("stage6", "assets/stage6.png");
+    this.load.image("toucan0", "assets/toucan0.png");
+    this.load.image("toucan1", "assets/toucan1.png");
 
     this.load.image("0", "assets/0.png");
     this.load.image("1", "assets/1.png");
@@ -117,21 +119,24 @@ class Game extends Phaser.Scene {
     game.poop = this.physics.add.group();
     game.birdInterval = setInterval(function () {
       let dir = Math.floor(Math.random() * 2) === 1 ? 0 : 2000;
-      let type = Math.random() * 1 > 0.5 ? "blueJay" : "pigeon";
+      let type = Math.random() * 1 > 0.5 ? (Math.random() * 1 > 0.3 ? "blueJay" : "toucan") : "pigeon";
       let bird = game.birds.create(dir, Math.random() * phaser.sys.game.canvas.height / 2, `${type}0`).setScale(8).setGravityY(-config.physics.arcade.gravity.y);
       bird.type = type;
       if (bird.type === "blueJay") {
         bird.setVelocityX(dir > 0 ? -200 : 200);
         bird.poopTimer = 50;
+      } else if (bird.type === "pigeon") {
+        bird.setVelocityX(dir > 0 ? -150 : 150);
+        bird.poopTimer = 100;
       } else {
         bird.setVelocityX(dir > 0 ? -100 : 100);
-        bird.poopTimer = 100;
+        bird.poopTimer = 150;
       }
       bird.dir = dir;
       if (dir < 2000) {
         bird.flipX = true;
       }
-    }, Math.random() * (this.birdMax - 1000) + 1000);
+    }, Math.random() * this.birdMax);
 
     // Input
     game.cursors = this.input.keyboard.createCursorKeys();
@@ -260,6 +265,16 @@ class Game extends Phaser.Scene {
         key: "boss1"
       }],
       frameRate: 5,
+      repeat: 0
+    });
+    this.anims.create({
+      key: "toucanFly",
+      frames: [{
+        key: "toucan1"
+      }, {
+        key: "toucan0"
+      }],
+      frameRate: 10,
       repeat: 0
     });
     game.car.anims.play(`drive${game.poopTimes}`, true);
@@ -417,14 +432,31 @@ class Game extends Phaser.Scene {
         bird.destroy();
       }
       if (bird.poopTimer <= 0) {
-        let poop = game.poop.create(bird.x, bird.y, "poop").setScale(8).setSize(1, 1).setOffset(6, 6).setGravityX(game.wind.windy ? (game.wind.direction ? game.wind.windSpeed : -game.wind.windSpeed) : 0);
-        if (bird.dir < 2000) {
-          poop.flipX = true;
-          poop.setOffset(1, 6);
+        if (bird.type === "toucan") {
+          let poop1 = game.poop.create(bird.x, bird.y, "poop").setScale(8).setSize(1, 1).setOffset(6, 6).setGravityX(game.wind.windy ? (game.wind.direction ? game.wind.windSpeed : -game.wind.windSpeed) : 0).setGravityX(-500);
+          let poop2 = game.poop.create(bird.x, bird.y, "poop").setScale(8).setSize(1, 1).setOffset(6, 6).setGravityX(game.wind.windy ? (game.wind.direction ? game.wind.windSpeed : -game.wind.windSpeed) : 0).setGravityX(500);
+          let poop3 = game.poop.create(bird.x, bird.y, "poop").setScale(8).setSize(1, 1).setOffset(6, 6).setGravityX(game.wind.windy ? (game.wind.direction ? game.wind.windSpeed : -game.wind.windSpeed) : 0);
+
+          if (bird.dir < 2000) {
+            poop1.flipX = true;
+            poop1.setOffset(1, 6);
+            poop2.flipX = true;
+            poop2.setOffset(1, 6);
+            poop3.flipX = true;
+            poop3.setOffset(1, 6);
+          }
+        } else {
+          let poop = game.poop.create(bird.x, bird.y, "poop").setScale(8).setSize(1, 1).setOffset(6, 6).setGravityX(game.wind.windy ? (game.wind.direction ? game.wind.windSpeed : -game.wind.windSpeed) : 0);
+          if (bird.dir < 2000) {
+            poop.flipX = true;
+            poop.setOffset(1, 6);
+          }
         }
         bird.poopTimer = 100;
         if (bird.type === "blueJay") {
           bird.poopTimer = 50;
+        } else if (bird.type === "toucan") {
+
         }
       }
     });
