@@ -468,8 +468,8 @@ class Game extends Phaser.Scene {
       }
       if (bird.poopTimer <= 0) {
         if (bird.type === "toucan") {
-          let poop1 = game.poop.create(bird.x, bird.y, "poop").setScale(8).setSize(1, 1).setOffset(6, 6).setGravityX(game.wind.windy ? (game.wind.direction ? game.wind.windSpeed : -game.wind.windSpeed) : 0).setGravityX(-500);
-          let poop2 = game.poop.create(bird.x, bird.y, "poop").setScale(8).setSize(1, 1).setOffset(6, 6).setGravityX(game.wind.windy ? (game.wind.direction ? game.wind.windSpeed : -game.wind.windSpeed) : 0).setGravityX(500);
+          let poop1 = game.poop.create(bird.x, bird.y, "poop").setScale(8).setSize(1, 1).setOffset(6, 6).setGravityX(game.wind.windy ? (game.wind.direction ? game.wind.windSpeed : -game.wind.windSpeed) : 0).setVelocityX(-100);
+          let poop2 = game.poop.create(bird.x, bird.y, "poop").setScale(8).setSize(1, 1).setOffset(6, 6).setGravityX(game.wind.windy ? (game.wind.direction ? game.wind.windSpeed : -game.wind.windSpeed) : 0).setVelocityX(100);
           let poop3 = game.poop.create(bird.x, bird.y, "poop").setScale(8).setSize(1, 1).setOffset(6, 6).setGravityX(game.wind.windy ? (game.wind.direction ? game.wind.windSpeed : -game.wind.windSpeed) : 0);
 
           if (bird.dir < 2000) {
