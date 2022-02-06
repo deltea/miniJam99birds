@@ -76,11 +76,11 @@ class Game extends Phaser.Scene {
     this.load.image("8", "assets/8.png");
     this.load.image("9", "assets/9.png");
 
-    this.load.audio("hit", "assets/hit.wav");
-    this.load.audio("wind", "assets/wind.wav");
-    this.load.audio("levelUp", "assets/levelUp.wav");
-    this.load.audio("powerup", "assets/powerup.wav");
-    this.load.audio("bossPoop", "assets/bossPoop.wav");
+    this.load.audio("hit", "assets/hit.mp3");
+    this.load.audio("wind", "assets/wind.mp3");
+    this.load.audio("levelUp", "assets/levelUp.mp3");
+    this.load.audio("powerup", "assets/powerup.mp3");
+    this.load.audio("bossPoop", "assets/bossPoop.mp3");
     this.load.audio("music", "assets/music.mp3");
   }
   create() {
