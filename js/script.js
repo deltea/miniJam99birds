@@ -405,6 +405,7 @@ class Game extends Phaser.Scene {
         game.wind.windy = false;
         setTimeout(function () {
           game.sfx.wind.stop();
+          game.sfx.music.stop();
           clearInterval(game.timerInterval);
           clearInterval(game.birdInterval);
           clearInterval(game.cloudInterval);
@@ -425,6 +426,7 @@ class Game extends Phaser.Scene {
         game.car.cantMove = true;
         game.wind.windy = false;
         setTimeout(function () {
+          game.sfx.wind.stop();
           game.sfx.wind.stop();
           clearInterval(game.timerInterval);
           clearInterval(game.birdInterval);
