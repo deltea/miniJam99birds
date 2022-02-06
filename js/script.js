@@ -52,6 +52,12 @@ class Game extends Phaser.Scene {
     this.load.image("boss0", "assets/boss0.png");
     this.load.image("boss1", "assets/boss1.png");
     this.load.image("bossPoop", "assets/bossPoop.png");
+    this.load.image("stage1", "assets/stage1.png");
+    this.load.image("stage2", "assets/stage2.png");
+    this.load.image("stage3", "assets/stage3.png");
+    this.load.image("stage4", "assets/stage4.png");
+    this.load.image("stage5", "assets/stage5.png");
+    this.load.image("stage6", "assets/stage6.png");
 
     this.load.image("0", "assets/0.png");
     this.load.image("1", "assets/1.png");
@@ -66,6 +72,9 @@ class Game extends Phaser.Scene {
 
     this.load.audio("hit", "assets/hit.wav");
     this.load.audio("wind", "assets/wind.wav");
+    this.load.audio("levelUp", "assets/levelUp.wav");
+    this.load.audio("powerup", "assets/powerup.wav");
+    this.load.audio("bossPoop", "assets/bossPoop.wav");
     this.load.audio("music", "assets/music.mp3");
   }
   create() {
@@ -94,6 +103,9 @@ class Game extends Phaser.Scene {
 
     // SFX
     game.sfx.hit = this.sound.add("hit");
+    game.sfx.bossPoop = this.sound.add("bossPoop");
+    game.sfx.powerup = this.sound.add("powerup");
+    game.sfx.levelUp = this.sound.add("levelUp").play();
     game.sfx.wind = this.sound.add("wind").setLoop(true);
     game.sfx.music = this.sound.add("music").setLoop(true);
     if (game.currentStage === 1) {
@@ -250,6 +262,7 @@ class Game extends Phaser.Scene {
       frameRate: 5,
       repeat: 0
     });
+    game.car.anims.play(`drive${game.poopTimes}`, true);
 
     // Show time
     game.timerNumbers = this.physics.add.staticGroup();
@@ -327,11 +340,18 @@ class Game extends Phaser.Scene {
       game.bossPoop = this.physics.add.group();
     }
 
+    // Create stage message
+    game.stageMessage = this.add.image(this.sys.game.canvas.width / 2, this.sys.game.canvas.height / 2, `stage${game.currentStage}`).setScale(8).setScrollFactor(0);
+    setTimeout(function () {
+      game.stageMessage.destroy();
+    }, 1000);
+
     // Colliders
     this.physics.add.collider(game.plants, game.plants, (plant1, plant2) => {
       plant1.destroy();
     });
     this.physics.add.collider(game.car, game.oil, (car, oil) => {
+      game.sfx.powerup.play();
       oil.destroy();
       game.carSpeed += 200;
     });
@@ -435,6 +455,7 @@ class Game extends Phaser.Scene {
       game.boss.anims.play("boss", true);
       game.boss.poopTimer--;
       if (game.boss.poopTimer <= 0) {
+        game.sfx.bossPoop.play();
         game.bossPoop.create(game.boss.x, game.boss.y, "bossPoop").setScale(8).setSize(3, 3).setOffset(5, 3);
         game.boss.poopTimer = 30;
       }
@@ -467,12 +488,12 @@ class Stage3 extends Game {
 }
 class Stage4 extends Game {
   constructor() {
-    super("Stage4", 3000, true, false, false, 0);
+    super("Stage4", 2000, true, false, false, 0);
   }
 }
 class Stage5 extends Game {
   constructor() {
-    super("Stage5", 3000, true, false, false, 0);
+    super("Stage5", 1000, true, false, false, 0);
   }
 }
 class Stage6 extends Game {
