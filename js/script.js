@@ -275,7 +275,7 @@ class Game extends Phaser.Scene {
         game.sfx.music.stop();
         game.sfx.wind.stop();
         game.currentStage++;
-        if (game.currentStage > 3) {
+        if (game.currentStage > 4) {
           phaser.scene.stop();
           phaser.scene.start("Win");
         }
