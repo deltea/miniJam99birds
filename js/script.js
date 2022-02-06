@@ -96,7 +96,9 @@ class Game extends Phaser.Scene {
     game.sfx.hit = this.sound.add("hit");
     game.sfx.wind = this.sound.add("wind").setLoop(true);
     game.sfx.music = this.sound.add("music").setLoop(true);
-    game.sfx.music.play();
+    if (game.currentStage === 1) {
+      game.sfx.music.play();
+    }
 
     // Create birds
     game.birds = this.physics.add.group();
@@ -272,10 +274,9 @@ class Game extends Phaser.Scene {
         clearInterval(game.birdInterval);
         clearInterval(game.cloudInterval);
         game.wind.windy = false;
-        game.sfx.music.stop();
         game.sfx.wind.stop();
         game.currentStage++;
-        if (game.currentStage > 4) {
+        if (game.currentStage > 6) {
           phaser.scene.stop();
           phaser.scene.start("Win");
         }
@@ -319,7 +320,7 @@ class Game extends Phaser.Scene {
     }
 
     // Boss bird
-    if (game.currentStage === 4) {
+    if (game.currentStage === 6) {
       game.boss = this.physics.add.sprite(1000, 100, "boss0").setScale(8).setGravityY(-config.physics.arcade.gravity.y).setCollideWorldBounds(true);
       game.boss.dir = false;
       game.boss.poopTimer = 30;
@@ -347,7 +348,6 @@ class Game extends Phaser.Scene {
         game.wind.windy = false;
         setTimeout(function () {
           game.sfx.wind.stop();
-          game.sfx.music.stop();
           clearInterval(game.timerInterval);
           clearInterval(game.birdInterval);
           clearInterval(game.cloudInterval);
@@ -369,7 +369,6 @@ class Game extends Phaser.Scene {
         game.wind.windy = false;
         setTimeout(function () {
           game.sfx.wind.stop();
-          game.sfx.music.stop();
           clearInterval(game.timerInterval);
           clearInterval(game.birdInterval);
           clearInterval(game.cloudInterval);
@@ -429,10 +428,10 @@ class Game extends Phaser.Scene {
         }
       });
     }
-    if (game.wind.windy) {
+    if (game.wind.windy && this.hasTree) {
       game.tree.anims.play("treeWind", true);
     }
-    if (game.currentStage === 4) {
+    if (game.currentStage === 6) {
       game.boss.anims.play("boss", true);
       game.boss.poopTimer--;
       if (game.boss.poopTimer <= 0) {
@@ -453,22 +452,48 @@ class Game extends Phaser.Scene {
 }
 class Stage1 extends Game {
   constructor() {
-    super("Stage1", 8000, false, false, true, 1500);
+    super("Stage1", 8000, false, false, false, 0);
   }
 }
 class Stage2 extends Game {
   constructor() {
-    super("Stage2", 5000, true, true, true, 1500);
+    super("Stage2", 5000, false, true, false, 0);
   }
 }
 class Stage3 extends Game {
   constructor() {
-    super("Stage3", 3000, true, false, true, 1500);
+    super("Stage3", 3000, true, false, false, 0);
   }
 }
 class Stage4 extends Game {
   constructor() {
-    super("Stage4", 2000, false, false, false, 0);
+    super("Stage4", 3000, true, false, false, 0);
+  }
+}
+class Stage5 extends Game {
+  constructor() {
+    super("Stage5", 3000, true, false, false, 0);
+  }
+}
+class Stage6 extends Game {
+  constructor() {
+    super("Stage6", 2000, false, false, true, 1000);
+  }
+}
+class Title extends Phaser.Scene {
+  constructor() {
+    super("Title");
+  }
+  preload() {
+    this.load.image("title", "assets/title.png");
+  }
+  create() {
+    let phaser = this;
+    game.title = this.add.image(this.sys.game.canvas.width / 2, this.sys.game.canvas.height / 2, "title").setScale(8);
+    setTimeout(function () {
+      phaser.scene.stop();
+      phaser.scene.start("Stage1");
+    }, 1500);
   }
 }
 class GameOver extends Phaser.Scene {
