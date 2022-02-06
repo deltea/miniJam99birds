@@ -9,6 +9,10 @@ let game = {
     windy: false,
     windSpeed: 800,
     direction: false
+  },
+  pointer: {
+    isDown: false,
+    x: 0
   }
 };
 class Game extends Phaser.Scene {
@@ -369,6 +373,16 @@ class Game extends Phaser.Scene {
       });
     }, 1000);
 
+    // Mobile movement
+    this.input.on("pointerdown", (pointer) => {
+      game.pointer.isDown = true;
+      game.pointer.x = pointer.x
+    });
+    this.input.on("pointerup", (pointer) => {
+      game.pointer.isDown = false;
+      game.pointer.x = pointer.x
+    });
+
     // Colliders
     this.physics.add.collider(game.plants, game.plants, (plant1, plant2) => {
       plant1.destroy();
@@ -431,6 +445,17 @@ class Game extends Phaser.Scene {
         game.car.setVelocityX(-game.carSpeed);
         game.car.flipX = false;
         game.car.anims.play(`drive${game.poopTimes}`, true);
+      }
+      if (game.pointer.isDown) {
+        if (game.pointer.x > this.sys.game.canvas.width / 2) {
+          game.car.setVelocityX(game.carSpeed);
+          game.car.flipX = true;
+          game.car.anims.play(`drive${game.poopTimes}`, true);
+        } else {
+          game.car.setVelocityX(-game.carSpeed);
+          game.car.flipX = false;
+          game.car.anims.play(`drive${game.poopTimes}`, true);
+        }
       }
     }
     game.birds.getChildren().forEach(bird => {
@@ -573,11 +598,22 @@ class GameOver extends Phaser.Scene {
   }
   preload() {
     this.load.image("gameOver", "assets/gameOver.png");
+    this.load.image("playAgain", "assets/playAgain.png");
     this.load.image("car10", "assets/car10.png");
   }
   create() {
-    this.add.image(this.sys.game.canvas.width / 2, (this.sys.game.canvas.height / 2) - 100, "gameOver").setScale(8);
-    this.add.image(this.sys.game.canvas.width / 2, (this.sys.game.canvas.height / 2) + 100, "car10").setScale(8);
+    let phaser = this;
+    this.add.image(this.sys.game.canvas.width / 2, (this.sys.game.canvas.height / 2) - 150, "gameOver").setScale(8);
+    this.add.image(this.sys.game.canvas.width / 2, (this.sys.game.canvas.height / 2) + 50, "car10").setScale(8);
+    this.add.image(this.sys.game.canvas.width / 2, (this.sys.game.canvas.height / 2) + 150, "playAgain").setScale(4);
+    this.input.on("pointerdown", () => {
+      game.currentStage = 1;
+      game.timer = 30;
+      game.carSpeed = 500;
+      game.poopTimes = 0;
+      phaser.scene.stop();
+      phaser.scene.start("Title");
+    });
   }
 }
 class Win extends Phaser.Scene {
