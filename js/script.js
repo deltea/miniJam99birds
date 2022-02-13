@@ -17,12 +17,13 @@ let game = {
   }
 };
 class Game extends Phaser.Scene {
-  constructor(key, birdMax, hasWind, hasOil, hasTree, treePos) {
+  constructor(key, birdMax, hasWind, hasOil, hasTree, hasWater, treePos) {
     super(key);
     this.birdMax = birdMax;
     this.hasWind = hasWind;
     this.hasOil = hasOil;
     this.hasTree = hasTree;
+    this.hasWater = hasWater;
     this.treePos = treePos;
   }
   preload() {
@@ -66,6 +67,10 @@ class Game extends Phaser.Scene {
     this.load.image("toucan0", "assets/toucan0.png");
     this.load.image("toucan1", "assets/toucan1.png");
     this.load.image("mountains", "assets/mountains.png");
+    this.load.image("water0", "assets/water0.png");
+    this.load.image("water1", "assets/water1.png");
+    this.load.image("water2", "assets/water2.png");
+    this.load.image("water3", "assets/water3.png");
 
     this.load.image("0", "assets/0.png");
     this.load.image("1", "assets/1.png");
@@ -84,6 +89,7 @@ class Game extends Phaser.Scene {
     this.load.audio("powerup", "assets/powerup.mp3");
     this.load.audio("bossPoop", "assets/bossPoop.mp3");
     this.load.audio("music", "assets/music.mp3");
+    this.load.audio("boss", "assets/boss.mp3");
   }
   create() {
     let phaser = this;
@@ -121,8 +127,11 @@ class Game extends Phaser.Scene {
     game.sfx.levelUp = this.sound.add("levelUp").play();
     game.sfx.wind = this.sound.add("wind").setLoop(true);
     game.sfx.music = this.sound.add("music").setLoop(true);
+    game.sfx.boss = this.sound.add("boss").setLoop(true);
     if (game.currentStage === 1 && game.deaths < 1) {
       game.sfx.music.play();
+    } else if (game.currentStage === 6 && game.deaths < 1) {
+      game.sfx.boss.play();
     }
 
     // Create birds
@@ -130,7 +139,7 @@ class Game extends Phaser.Scene {
     game.poop = this.physics.add.group();
     game.birdInterval = setInterval(function () {
       let dir = Math.floor(Math.random() * 2) === 1 ? 0 : 2000;
-      let type = Math.random() * 1 > 0.5 ? (Math.random() * 1 > 0.3 ? "blueJay" : "toucan") : "pigeon";
+      let type = Math.random() * 1 > 0.5 ? (Math.random() * 1 > 0.3 && game.currentStage > 3 ? "toucan" : "blueJay") : "pigeon";
       let bird = game.birds.create(dir, Math.random() * phaser.sys.game.canvas.height / 2, `${type}0`).setScale(8).setGravityY(-config.physics.arcade.gravity.y);
       bird.type = type;
       if (bird.type === "blueJay") {
@@ -288,6 +297,20 @@ class Game extends Phaser.Scene {
       frameRate: 10,
       repeat: 0
     });
+    this.anims.create({
+      key: "waterDrip",
+      frames: [{
+        key: "water0"
+      }, {
+        key: "water1"
+      }, {
+        key: "water2"
+      }, {
+        key: "water3"
+      }],
+      frameRate: 3,
+      repeat: -1
+    });
     game.car.anims.play(`drive${game.poopTimes}`, true);
 
     // Show time
@@ -354,9 +377,14 @@ class Game extends Phaser.Scene {
     // Create oil
     game.oil = this.physics.add.group();
     if (this.hasOil) {
-      setTimeout(function () {
-        game.oil.create(Math.random() * 2000, phaser.sys.game.canvas.height - 32, "oil").setGravityY(-config.physics.arcade.gravity.y).setScale(8);
-      }, Math.random() * 25000);
+      game.oil.create(Math.random() * 800, phaser.sys.game.canvas.height - 32, "oil").setGravityY(-config.physics.arcade.gravity.y).setScale(8);
+    }
+
+    // Create water bucket
+    game.waterBucket = this.physics.add.group();
+    if (this.hasWater) {
+      let bucket = game.waterBucket.create(Math.random() * 800, phaser.sys.game.canvas.height - 24, "water0").setGravityY(-config.physics.arcade.gravity.y).setScale(8);
+      bucket.anims.play("waterDrip", true);
     }
 
     // Boss bird
@@ -398,6 +426,12 @@ class Game extends Phaser.Scene {
       game.sfx.powerup.play();
       oil.destroy();
       game.carSpeed += 200;
+    });
+    this.physics.add.collider(game.car, game.waterBucket, (car, bucket) => {
+      game.sfx.powerup.play();
+      bucket.destroy();
+      game.poopTimes = 0;
+      game.car.anims.play(`drive${game.poopTimes}`, true);
     });
     this.physics.add.collider(game.car, game.poop, (car, poop) => {
       game.sfx.hit.play({
@@ -549,32 +583,32 @@ class Game extends Phaser.Scene {
 }
 class Stage1 extends Game {
   constructor() {
-    super("Stage1", 8000, false, false, false, 0);
+    super("Stage1", 8000, false, false, false, false, 0);
   }
 }
 class Stage2 extends Game {
   constructor() {
-    super("Stage2", 5000, false, true, false, 0);
+    super("Stage2", 5000, false, true, false, false, 0);
   }
 }
 class Stage3 extends Game {
   constructor() {
-    super("Stage3", 3000, true, false, false, 0);
+    super("Stage3", 3000, false, false, false, false, 0);
   }
 }
 class Stage4 extends Game {
   constructor() {
-    super("Stage4", 2000, true, false, false, 0);
+    super("Stage4", 3000, true, false, false, true, 0);
   }
 }
 class Stage5 extends Game {
   constructor() {
-    super("Stage5", 1000, true, false, false, 0);
+    super("Stage5", 3000, true, false, false, false, 0);
   }
 }
 class Stage6 extends Game {
   constructor() {
-    super("Stage6", 2000, false, false, true, 1000);
+    super("Stage6", 3000, true, false, true, false, 1000);
   }
 }
 class Title extends Phaser.Scene {
