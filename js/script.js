@@ -6,6 +6,8 @@ let game = {
   sfx: {},
   deaths: 0,
   carSpeed: 500,
+  birdSpawnTimer: 0,
+  birdSpawnTimerMax: 100,
   wind: {
     windy: false,
     windSpeed: 800,
@@ -137,26 +139,6 @@ class Game extends Phaser.Scene {
     // Create birds
     game.birds = this.physics.add.group();
     game.poop = this.physics.add.group();
-    game.birdInterval = setInterval(function () {
-      let dir = Math.floor(Math.random() * 2) === 1 ? 0 : 2000;
-      let type = Math.random() * 1 > 0.5 ? (Math.random() * 1 > 0.3 && game.currentStage > 3 ? "toucan" : "blueJay") : "pigeon";
-      let bird = game.birds.create(dir, Math.random() * phaser.sys.game.canvas.height / 2, `${type}0`).setScale(8).setGravityY(-config.physics.arcade.gravity.y);
-      bird.type = type;
-      if (bird.type === "blueJay") {
-        bird.setVelocityX(dir > 0 ? -200 : 200);
-        bird.poopTimer = 50;
-      } else if (bird.type === "pigeon") {
-        bird.setVelocityX(dir > 0 ? -150 : 150);
-        bird.poopTimer = 100;
-      } else {
-        bird.setVelocityX(dir > 0 ? -100 : 100);
-        bird.poopTimer = 150;
-      }
-      bird.dir = dir;
-      if (dir < 2000) {
-        bird.flipX = true;
-      }
-    }, Math.random() * (this.birdMax - 1000) + 1000);
 
     // Input
     game.cursors = this.input.keyboard.createCursorKeys();
@@ -579,36 +561,61 @@ class Game extends Phaser.Scene {
         game.boss.flipX = !game.boss.flipX;
       }
     }
+    game.birdSpawnTimer++;
+    console.log(game.birdSpawnTimer);
+    console.log(game.birdSpawnTimerMax);
+    if (game.birdSpawnTimer >= game.birdSpawnTimerMax) {
+      game.birdSpawnTimerMax = Math.random() * (this.birdMax - 100) + 100;
+      game.birdSpawnTimer = 0;
+      let dir = Math.floor(Math.random() * 2) === 1 ? 0 : 2000;
+      let type = Math.random() * 1 > 0.5 ? (Math.random() * 1 > 0.3 && game.currentStage > 3 ? "toucan" : "blueJay") : "pigeon";
+      let bird = game.birds.create(dir, Math.random() * this.sys.game.canvas.height / 2, `${type}0`).setScale(8).setGravityY(-config.physics.arcade.gravity.y);
+      bird.type = type;
+      if (bird.type === "blueJay") {
+        bird.setVelocityX(dir > 0 ? -200 : 200);
+        bird.poopTimer = 50;
+      } else if (bird.type === "pigeon") {
+        bird.setVelocityX(dir > 0 ? -150 : 150);
+        bird.poopTimer = 100;
+      } else {
+        bird.setVelocityX(dir > 0 ? -100 : 100);
+        bird.poopTimer = 150;
+      }
+      bird.dir = dir;
+      if (dir < 2000) {
+        bird.flipX = true;
+      }
+    }
   }
 }
 class Stage1 extends Game {
   constructor() {
-    super("Stage1", 8000, false, false, false, false, 0);
+    super("Stage1", 800, false, false, false, false, 0);
   }
 }
 class Stage2 extends Game {
   constructor() {
-    super("Stage2", 5000, false, true, false, false, 0);
+    super("Stage2", 500, false, true, false, false, 0);
   }
 }
 class Stage3 extends Game {
   constructor() {
-    super("Stage3", 3000, false, false, false, false, 0);
+    super("Stage3", 300, false, false, false, false, 0);
   }
 }
 class Stage4 extends Game {
   constructor() {
-    super("Stage4", 3000, true, false, false, true, 0);
+    super("Stage4", 300, true, false, false, true, 0);
   }
 }
 class Stage5 extends Game {
   constructor() {
-    super("Stage5", 3000, true, false, false, false, 0);
+    super("Stage5", 300, true, false, false, false, 0);
   }
 }
 class Stage6 extends Game {
   constructor() {
-    super("Stage6", 3000, true, false, true, false, 1000);
+    super("Stage6", 300, true, false, true, false, 1000);
   }
 }
 class Title extends Phaser.Scene {
